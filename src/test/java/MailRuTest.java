@@ -1,3 +1,4 @@
+import common.VideoRecord;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -24,9 +25,10 @@ public class MailRuTest {
     private WebDriver driver;
 
     @BeforeClass(description = "Start browser")
-    public void startBrowser() {
+    public void startBrowser() throws Exception {
         driver = new FirefoxDriver();
         driver.get(START_URL);
+        VideoRecord.startRecording();
     }
 
     @BeforeClass(dependsOnMethods = "startBrowser", description = "Add implicitly")
@@ -40,22 +42,25 @@ public class MailRuTest {
         Assert.assertTrue(isElementPresent(By.id("PH_logoutLink")));
     }
 
-    @Test(description = "Begin new letter creation", dependsOnMethods = { "loginToMailRu" })
+    @Test(description = "Begin new letter creation", dependsOnMethods = {"loginToMailRu"})
     public void beginCreationOfLetter() {
         driver.findElement(By.xpath("//a[@data-name='compose']")).click();
         Assert.assertTrue(driver.getCurrentUrl().contains("compose"));
     }
 
-    @Test(description = "Send new letter", dependsOnMethods = { "beginCreationOfLetter" })
+    @Test(description = "Send new letter", dependsOnMethods = {"beginCreationOfLetter"})
     public void sendNewLetter() {
         sendLetter(LOGIN + DOMAIN_PART, LETTER_SUBJECT, LETTER_BODY);
         Assert.assertTrue(isElementPresent(By.xpath("//div[@class='message-sent__title']")));
     }
 
     @AfterClass(description = "Stop Browser")
-    public void stopBrowser() {
+
+    public void stopBrowser() throws Exception {
+        VideoRecord.stopRecording();
         driver.quit();
     }
+
 
     private boolean isElementPresent(By by) {
         return !driver.findElements(by).isEmpty();
@@ -82,7 +87,7 @@ public class MailRuTest {
         driver.findElement(By.name("Subject")).sendKeys(subject);
 
         // doesn't work ???
-         driver.switchTo().frame(driver.findElement(By.xpath("//iframe[@id='compose_330_composeEditor_ifr']")));
+        driver.switchTo().frame(driver.findElement(By.xpath("//iframe[@id='compose_330_composeEditor_ifr']")));
 
         driver.switchTo().frame(3); // WTF Magic!?
 
